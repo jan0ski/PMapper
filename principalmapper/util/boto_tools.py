@@ -17,20 +17,40 @@
 
 from typing import Optional
 
-import botocore.session
+import boto3.session
 
 
-def get_session(profile_arg: Optional[str]) -> botocore.session.Session:
-    """Returns a botocore Session object taking into consideration Env-vars, etc.
+def get_session(profile_arg: Optional[str], role_arg: Optional[str]) -> boto3.session.Session:
+    """Returns a boto3 Session object taking into consideration Env-vars, etc.
 
     Tries to follow order from: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
     """
     # command-line args (--profile)
     if profile_arg is not None:
-        result = botocore.session.Session(profile=profile_arg)
+        result = boto3.session.Session(profile_name=profile_arg)
+    # command-line args (--role)
+    elif role_arg is not None:
+        stsclient = boto3.client('sts')
+        token = stsclient.assume_role(RoleArn=role_arg, RoleSessionName='PMapper')
+        result = boto3.session.Session(aws_session_token=token)
     else:  # pull from environment vars / metadata
-        result = botocore.session.get_session()
+        result = boto3.session.Session()
+        stsclient = result.client('sts')
 
-    stsclient = result.create_client('sts')
+    stsclient.get_caller_identity()  # raises error if it's not workable
+    return result
+
+def assume_role(role_arg: Optional[str]) -> boto3.session.Session:
+    """Returns a boto3 Session object taking into consideration Env-vars, etc.
+
+    Tries to follow order from: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
+    """
+    # command-line args (--profile)
+    if role_arg is not None:
+        result = boto3.session.Session(profile_name=profile_arg)
+    else:  # pull from environment vars / metadata
+        result = boto3.session.Session()
+
+    stsclient = result.client('sts')
     stsclient.get_caller_identity()  # raises error if it's not workable
     return result

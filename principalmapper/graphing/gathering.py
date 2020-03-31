@@ -18,7 +18,7 @@
 import io
 import os
 
-import botocore.session
+import boto3.session
 import principalmapper
 from principalmapper.common import Node, Group, Policy, Graph
 from principalmapper.graphing import edge_identification
@@ -28,13 +28,13 @@ from principalmapper.util.debug_print import dprint
 from typing import List, Optional
 
 
-def create_graph(session: botocore.session.Session, service_list: list, output: io.StringIO = os.devnull,
+def create_graph(session: boto3.session.Session, service_list: list, output: io.StringIO = open(os.devnull, 'w'),
                  debug=False) -> Graph:
     """Constructs a Graph object.
 
     Information about the graph as it's built will be written to the IO parameter `output`.
     """
-    stsclient = session.create_client('sts')
+    stsclient = session.client('sts')
     caller_identity = stsclient.get_caller_identity()
     dprint(debug, "Caller Identity: {}".format(caller_identity['Arn']))
     metadata = {
@@ -62,7 +62,7 @@ def create_graph(session: botocore.session.Session, service_list: list, output: 
     return Graph(nodes_result, edges_result, policies_result, groups_result, metadata)
 
 
-def get_unfilled_nodes(iamclient, output: io.StringIO = os.devnull, debug=False) -> List[Node]:
+def get_unfilled_nodes(iamclient, output: io.StringIO = open(os.devnull, 'w'), debug=False) -> List[Node]:
     """Using an IAM.Client object, return a list of Node object for each IAM user and role in an account.
 
     Does not set Group or Policy objects. Those have to be filled in later.
@@ -137,7 +137,7 @@ def get_unfilled_nodes(iamclient, output: io.StringIO = os.devnull, debug=False)
     return result
 
 
-def get_unfilled_groups(iamclient, nodes: List[Node], output: io.StringIO = os.devnull, debug=False) -> List[Group]:
+def get_unfilled_groups(iamclient, nodes: List[Node], output: io.StringIO = open(os.devnull, 'w'), debug=False) -> List[Group]:
     """Using an IAM.Client object, returns a list of Group objects. Adds to each passed Node's group_memberships
     property.
 
@@ -178,7 +178,7 @@ def get_unfilled_groups(iamclient, nodes: List[Node], output: io.StringIO = os.d
 
 
 def get_policies_and_fill_out(iamclient, nodes: List[Node], groups: List[Group],
-                              output: io.StringIO = os.devnull, debug=False) -> List[Policy]:
+                              output: io.StringIO = open(os.devnull, 'w'), debug=False) -> List[Policy]:
     """Using an IAM.Client object, return a list of Policy objects. Adds references to each passed Node and
     Group object where applicable.
 
@@ -279,7 +279,7 @@ def get_policies_and_fill_out(iamclient, nodes: List[Node], groups: List[Group],
     return result
 
 
-def update_admin_status(nodes: List[Node], output: io.StringIO = os.devnull, debug: bool = False) -> None:
+def update_admin_status(nodes: List[Node], output: io.StringIO = open(os.devnull, 'w'), debug: bool = False) -> None:
     """Given a list of nodes, goes through and updates each node's is_admin data."""
     for node in nodes:
         output.write("checking if {} is an admin\n".format(node.searchable_name()))

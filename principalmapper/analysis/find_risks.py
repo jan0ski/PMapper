@@ -27,6 +27,7 @@ dictionary objects with the format:
 
 import datetime as dt
 import json
+import os
 from typing import List
 
 import principalmapper
@@ -48,6 +49,21 @@ def gen_findings_and_print(graph: Graph, formatting: str) -> None:
     else:  # format == 'json'
         print(json.dumps(report.as_dictionary(), indent=4))
 
+def gen_findings_to_file(graph: Graph, formatting: str, file: str) -> None:
+    """Generates findings of risk, writes them to a file."""
+
+    report = gen_report(graph)
+    content = report.as_dictionary() # default format == text
+
+    path = os.path.abspath(os.curdir() + file)
+    if not os.path.isfile(path): # default file == /dev/null
+        path = os.devnull
+
+    if formatting == 'json':
+        content = json.dumps(content, indent=4)
+
+    with open(path, 'w') as f:
+        f.write(content)
 
 def gen_report(graph: Graph) -> Report:
     """Generates a Report object with findings and metadata about report-generation"""

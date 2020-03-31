@@ -19,7 +19,7 @@ import os
 import os.path
 import sys
 
-import botocore.session
+import boto3.session
 from principalmapper.common import Graph
 from principalmapper.graphing import gathering
 from principalmapper.util.debug_print import dprint
@@ -27,7 +27,7 @@ from principalmapper.util.storage import get_storage_root
 from typing import List, Optional
 
 
-def create_new_graph(session: botocore.session.Session, service_list: List[str], debug=False) -> Graph:
+def create_new_graph(session: boto3.session.Session, service_list: List[str], debug=False) -> Graph:
     """Wraps around principalmapper.graphing.gathering.create_graph(...), specifying to print data to stdout. This
     fulfills `pmapper graph --create`.
     """

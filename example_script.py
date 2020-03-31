@@ -32,17 +32,24 @@ def main():
     """Body of the script."""
     # Handle input args --profile and --format
     parser = argparse.ArgumentParser()
-    parser.add_argument('--profile')
+    parser.add_argument('--profile', required=False)
+    parser.add_argument('--role', required=False)
     parser.add_argument('--format', default='text', choices=['text', 'json'])
     parsed_args = parser.parse_args()
 
-    # Generate the graph (such as with `pmapper graph --create`)
+
+    # Create session using the default search order + optional assumed role or a config profile
+    #session = botocore_tools.get_session()
+    # session = botocore_tools.get_session(parsed_args.role)
     session = botocore_tools.get_session(parsed_args.profile)
+
+    # Generate the graph (such as with `pmapper graph --create`)
     # graph_obj = gathering.create_graph(session, checker_map.keys())  # gets a Graph object without printing info
     graph_obj = graph_actions.create_new_graph(session, checker_map.keys())
 
-    # Print out identified findings (such as with `pmapper analysis`)
+    # Print out or write identified findings (such as with `pmapper analysis`)
     find_risks.gen_findings_and_print(graph_obj, parsed_args.format)
+    # find_risks.gen_findings_to_file(graph_obj, parsed_args.format, outfile)
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ import io
 import os
 from typing import List, Optional
 
-import botocore.session
+import boto3.session
 
 from principalmapper.common import Edge, Node
 from principalmapper.graphing.cloudformation_edges import CloudFormationEdgeChecker
@@ -42,9 +42,9 @@ checker_map = {
 }
 
 
-def obtain_edges(session: Optional[botocore.session.Session], checker_list: List[str], nodes: List[Node],
-                 output: io.StringIO = os.devnull, debug: bool = False) -> List[Edge]:
-    """Given a list of nodes and a botocore Session, return a list of edges between those nodes. Only checks
+def obtain_edges(session: Optional[boto3.session.Session], checker_list: List[str], nodes: List[Node],
+                 output: io.StringIO = open(os.devnull, 'w'), debug: bool = False) -> List[Edge]:
+    """Given a list of nodes and a boto3 Session, return a list of edges between those nodes. Only checks
     against services passed in the checker_list param. """
     result = []
     output.write('Initiating edge checks.\n')
